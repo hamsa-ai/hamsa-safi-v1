@@ -1,0 +1,14 @@
+Copyright (c) 2026 Hamsa AI
+
+The benchmark results, documentation and audio samples in this repository are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+Audio samples are derived from:
+  - FLEURS (Google), CC BY 4.0 — https://huggingface.co/datasets/google/fleurs
+  - MS-SNSD (Microsoft), MIT License — https://github.com/microsoft/MS-SNSD
+
+Processed outputs of third-party systems (Krisp, DeepFilterNet3, RNNoise, Hush) are included solely for
+comparison. Those systems and their names belong to their respective owners.
+
+The Hamsa Safi model itself is not distributed in this repository.

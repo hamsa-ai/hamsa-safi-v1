@@ -1,0 +1,95 @@
+test,set,vs,safi_minus_system,relative_pct_vs_system,ci95_low,ci95_high,safi_better_rate,n
+whisper_cer_pct,ar_wb,Krisp VIVA Tel v2,-12.078,47.5,-16.122,-8.616,0.587,150
+whisper_cer_pct,ar_wb,Krisp VIVA Pro v1,-4.02,23.2,-6.133,-2.189,0.52,150
+whisper_cer_pct,ar_wb,RNNoise,-6.56,33.0,-9.073,-4.422,0.647,150
+whisper_cer_pct,ar_wb,Hush,-9.234,40.9,-11.812,-6.814,0.747,150
+whisper_cer_pct,ar_tel,Krisp VIVA Tel v2,-0.584,2.3,-3.437,2.272,0.44,150
+whisper_cer_pct,ar_tel,Krisp VIVA Pro v1,-0.389,1.6,-2.999,2.526,0.48,150
+whisper_cer_pct,ar_tel,RNNoise,-8.321,25.3,-11.552,-5.103,0.653,150
+whisper_cer_pct,ar_tel,Hush,-18.887,43.4,-23.038,-14.879,0.787,150
+whisper_cer_pct,ar_real,Krisp VIVA Tel v2,-0.432,2.7,-3.87,2.49,0.2,100
+whisper_cer_pct,ar_real,Krisp VIVA Pro v1,-3.321,17.3,-6.662,-0.088,0.27,100
+whisper_cer_pct,ar_real,RNNoise,-9.598,37.7,-14.028,-5.473,0.49,100
+whisper_cer_pct,ar_real,Hush,-10.116,38.9,-14.065,-6.432,0.49,100
+whisper_cer_pct,ar_real_tel,Krisp VIVA Tel v2,0.846,-3.1,-4.796,5.974,0.3,100
+whisper_cer_pct,ar_real_tel,Krisp VIVA Pro v1,-4.683,14.2,-11.686,1.758,0.34,100
+whisper_cer_pct,ar_real_tel,RNNoise,-33.707,54.5,-40.885,-26.821,0.67,100
+whisper_cer_pct,ar_real_tel,Hush,-26.746,48.7,-32.675,-20.443,0.72,100
+whisper_cer_pct,en_wb,Krisp VIVA Tel v2,-9.052,40.3,-13.719,-5.292,0.45,100
+whisper_cer_pct,en_wb,Krisp VIVA Pro v1,-3.581,21.1,-5.584,-1.715,0.4,100
+whisper_cer_pct,en_wb,RNNoise,-11.116,45.3,-15.23,-7.297,0.52,100
+whisper_cer_pct,en_wb,Hush,-9.062,40.3,-12.588,-5.591,0.55,100
+whisper_cer_pct,en_tel,Krisp VIVA Tel v2,-0.831,3.1,-3.625,1.908,0.42,100
+whisper_cer_pct,en_tel,Krisp VIVA Pro v1,-3.878,12.9,-7.106,-0.727,0.47,100
+whisper_cer_pct,en_tel,RNNoise,-31.495,54.6,-37.94,-24.939,0.78,100
+whisper_cer_pct,en_tel,Hush,-18.599,41.5,-23.59,-13.577,0.73,100
+dnsmos_ovrl_real,ar_real,Krisp VIVA Tel v2,0.1806,,0.1385,0.2238,0.82,100
+dnsmos_ovrl_real,ar_real,Krisp VIVA Pro v1,0.2737,,0.2275,0.3196,0.9,100
+dnsmos_ovrl_real,ar_real,RNNoise,0.2327,,0.1812,0.2862,0.84,100
+dnsmos_ovrl_real,ar_real,Hush,0.4434,,0.3821,0.5059,0.94,100
+dnsmos_ovrl_real,ar_real,Unprocessed,0.6732,,0.6071,0.7385,1.0,100
+dnsmos_ovrl_real,ar_real_tel,Krisp VIVA Tel v2,0.1217,,0.064,0.1799,0.7,100
+dnsmos_ovrl_real,ar_real_tel,Krisp VIVA Pro v1,0.1336,,0.0807,0.1845,0.74,100
+dnsmos_ovrl_real,ar_real_tel,RNNoise,0.5137,,0.4299,0.5989,0.9,100
+dnsmos_ovrl_real,ar_real_tel,Hush,0.5807,,0.5023,0.6603,0.93,100
+dnsmos_ovrl_real,ar_real_tel,Unprocessed,0.2945,,0.2266,0.3604,0.84,100
+vad_miss_pct,ar_tel,Krisp VIVA Tel v2,3.075,,0.705,5.683,,250
+vad_miss_pct,ar_tel,Krisp VIVA Pro v1,4.17,,1.548,6.885,,250
+vad_miss_pct,ar_tel,RNNoise,3.304,,0.546,6.336,,250
+vad_miss_pct,ar_tel,Hush,-14.863,,-18.867,-10.847,,250
+vad_miss_pct,ar_tel,Unprocessed,4.236,,1.483,7.229,,250
+vad_false_alarm_pct,ar_tel,Krisp VIVA Tel v2,-0.944,,-2.106,0.16,,250
+vad_false_alarm_pct,ar_tel,Krisp VIVA Pro v1,-2.566,,-3.901,-1.317,,250
+vad_false_alarm_pct,ar_tel,RNNoise,-1.68,,-3.622,0.202,,250
+vad_false_alarm_pct,ar_tel,Hush,1.98,,0.172,3.817,,250
+vad_false_alarm_pct,ar_tel,Unprocessed,-10.987,,-13.479,-8.771,,250
+vad_miss_pct,ar_wb,Krisp VIVA Tel v2,-10.488,,-13.738,-7.394,,250
+vad_miss_pct,ar_wb,Krisp VIVA Pro v1,-0.149,,-0.761,0.715,,250
+vad_miss_pct,ar_wb,RNNoise,-0.354,,-0.896,0.484,,250
+vad_miss_pct,ar_wb,Hush,-1.285,,-2.194,-0.338,,250
+vad_miss_pct,ar_wb,Unprocessed,-1.745,,-3.433,-0.337,,250
+vad_false_alarm_pct,ar_wb,Krisp VIVA Tel v2,3.171,,1.391,5.205,,250
+vad_false_alarm_pct,ar_wb,Krisp VIVA Pro v1,2.302,,0.875,3.869,,250
+vad_false_alarm_pct,ar_wb,RNNoise,-1.992,,-4.209,0.16,,250
+vad_false_alarm_pct,ar_wb,Hush,-1.736,,-3.793,0.317,,250
+vad_false_alarm_pct,ar_wb,Unprocessed,-8.907,,-11.126,-6.881,,250
+vad_miss_pct,en_tel,Krisp VIVA Tel v2,1.563,,-0.171,3.395,,188
+vad_miss_pct,en_tel,Krisp VIVA Pro v1,2.377,,0.463,4.292,,188
+vad_miss_pct,en_tel,RNNoise,-21.897,,-27.699,-16.516,,188
+vad_miss_pct,en_tel,Hush,-23.027,,-27.369,-19.001,,188
+vad_miss_pct,en_tel,Unprocessed,6.934,,3.932,10.458,,188
+vad_false_alarm_pct,en_tel,Krisp VIVA Tel v2,-1.336,,-2.589,-0.225,,188
+vad_false_alarm_pct,en_tel,Krisp VIVA Pro v1,-1.264,,-2.723,0.151,,188
+vad_false_alarm_pct,en_tel,RNNoise,0.309,,-4.428,4.269,,188
+vad_false_alarm_pct,en_tel,Hush,7.227,,5.161,9.35,,188
+vad_false_alarm_pct,en_tel,Unprocessed,-13.988,,-18.391,-10.227,,188
+vad_miss_pct,en_wb,Krisp VIVA Tel v2,-3.402,,-5.122,-1.888,,188
+vad_miss_pct,en_wb,Krisp VIVA Pro v1,-1.015,,-1.856,-0.312,,188
+vad_miss_pct,en_wb,RNNoise,1.259,,0.564,2.021,,188
+vad_miss_pct,en_wb,Hush,-3.062,,-4.209,-2.025,,188
+vad_miss_pct,en_wb,Unprocessed,-0.86,,-3.406,1.239,,188
+vad_false_alarm_pct,en_wb,Krisp VIVA Tel v2,-0.645,,-2.773,1.237,,188
+vad_false_alarm_pct,en_wb,Krisp VIVA Pro v1,0.503,,-1.283,2.222,,188
+vad_false_alarm_pct,en_wb,RNNoise,-6.863,,-10.77,-3.706,,188
+vad_false_alarm_pct,en_wb,Hush,-0.009,,-2.253,1.788,,188
+vad_false_alarm_pct,en_wb,Unprocessed,-12.437,,-16.109,-9.18,,188
+false_triggers_per_min_background_voices,noise_only_wb,Krisp VIVA Tel v2,-0.833,,-3.333,1.5,,36
+false_triggers_per_min_background_voices,noise_only_wb,Krisp VIVA Pro v1,-1.667,,-3.667,0.171,,36
+false_triggers_per_min_background_voices,noise_only_wb,RNNoise,-7.667,,-10.833,-4.667,,36
+false_triggers_per_min_background_voices,noise_only_wb,Hush,-8.0,,-11.333,-4.333,,36
+false_triggers_per_min_background_voices,noise_only_wb,Unprocessed,-4.333,,-7.333,-1.5,,36
+false_triggers_per_min_background_voices,noise_only_tel,Krisp VIVA Tel v2,-1.667,,-3.167,-0.333,,36
+false_triggers_per_min_background_voices,noise_only_tel,Krisp VIVA Pro v1,-3.333,,-5.333,-1.667,,36
+false_triggers_per_min_background_voices,noise_only_tel,RNNoise,-4.833,,-8.167,-1.5,,36
+false_triggers_per_min_background_voices,noise_only_tel,Hush,-1.667,,-4.667,1.167,,36
+false_triggers_per_min_background_voices,noise_only_tel,Unprocessed,-6.833,,-9.333,-4.167,,36
+false_triggers_per_min_other_noise,noise_only_wb,Krisp VIVA Tel v2,0.0,,0.0,0.0,,72
+false_triggers_per_min_other_noise,noise_only_wb,Krisp VIVA Pro v1,-0.333,,-0.75,0.0,,72
+false_triggers_per_min_other_noise,noise_only_wb,RNNoise,-0.417,,-1.0,0.0,,72
+false_triggers_per_min_other_noise,noise_only_wb,Hush,-0.5,,-1.167,0.0,,72
+false_triggers_per_min_other_noise,noise_only_wb,Unprocessed,0.0,,0.0,0.0,,72
+false_triggers_per_min_other_noise,noise_only_tel,Krisp VIVA Tel v2,0.0,,0.0,0.0,,72
+false_triggers_per_min_other_noise,noise_only_tel,Krisp VIVA Pro v1,0.0,,0.0,0.0,,72
+false_triggers_per_min_other_noise,noise_only_tel,RNNoise,-0.417,,-0.917,0.0,,72
+false_triggers_per_min_other_noise,noise_only_tel,Hush,-0.167,,-0.5,0.0,,72
+false_triggers_per_min_other_noise,noise_only_tel,Unprocessed,-0.083,,-0.25,0.0,,72

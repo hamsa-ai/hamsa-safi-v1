@@ -1,0 +1,35 @@
+set,system,cer,wer,n
+ar_real,Hush,0.26,0.4571,100
+ar_real,Krisp VIVA Pro v1,0.192,0.3772,100
+ar_real,Krisp VIVA Tel v2,0.1631,0.3345,100
+ar_real,RNNoise,0.2548,0.4412,100
+ar_real,Hamsa Safi v1,0.1588,0.3324,100
+ar_real_tel,Hush,0.5494,0.7495,100
+ar_real_tel,Krisp VIVA Pro v1,0.3288,0.5341,100
+ar_real_tel,Krisp VIVA Tel v2,0.2735,0.4941,100
+ar_real_tel,RNNoise,0.619,0.8005,100
+ar_real_tel,Hamsa Safi v1,0.2819,0.4984,100
+ar_tel,Clean reference,0.0345,0.1089,150
+ar_tel,Hush,0.4349,0.6075,150
+ar_tel,Krisp VIVA Pro v1,0.2499,0.4387,150
+ar_tel,Krisp VIVA Tel v2,0.2519,0.4331,150
+ar_tel,RNNoise,0.3292,0.5104,150
+ar_tel,Hamsa Safi v1,0.246,0.4124,150
+ar_wb,Clean reference,0.0302,0.0933,150
+ar_wb,Hush,0.2257,0.3828,150
+ar_wb,Krisp VIVA Pro v1,0.1736,0.3192,150
+ar_wb,Krisp VIVA Tel v2,0.2542,0.3945,150
+ar_wb,RNNoise,0.199,0.355,150
+ar_wb,Hamsa Safi v1,0.1334,0.2654,150
+en_tel,Clean reference,0.0249,0.0541,100
+en_tel,Hush,0.4479,0.5534,100
+en_tel,Krisp VIVA Pro v1,0.3007,0.4028,100
+en_tel,Krisp VIVA Tel v2,0.2702,0.3667,100
+en_tel,RNNoise,0.5769,0.6878,100
+en_tel,Hamsa Safi v1,0.2619,0.3479,100
+en_wb,Clean reference,0.0208,0.0472,100
+en_wb,Hush,0.2247,0.3123,100
+en_wb,Krisp VIVA Pro v1,0.1699,0.2503,100
+en_wb,Krisp VIVA Tel v2,0.2246,0.3019,100
+en_wb,RNNoise,0.2453,0.3477,100
+en_wb,Hamsa Safi v1,0.1341,0.2046,100

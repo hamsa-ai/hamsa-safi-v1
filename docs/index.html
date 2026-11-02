@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hamsa Safi v1: real-time noise suppression for Arabic voice agents</title>
+<meta name="description" content="Independent benchmark of Hamsa Safi v1 against Krisp, RNNoise and Hush: audio quality, speech recognition and voice activity detection on Arabic and English, telephone and wideband speech.">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6; --accent-wash: rgba(42,120,214,0.08); --other: #b9b8b0; --noisy: #e1e0d9;
+  --good: #006300;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --accent: #3987e5; --accent-wash: rgba(57,135,229,0.12); --other: #5c5b56; --noisy: #383835;
+    --good: #0ca30c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 0 20px 64px; }
+a { color: var(--accent); }
+h1 { font-size: 40px; line-height: 1.15; margin: 56px 0 8px; letter-spacing: -0.01em; }
+h2 { font-size: 26px; margin: 64px 0 6px; }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+.lede { font-size: 19px; color: var(--ink-2); max-width: 760px; margin: 0 0 28px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-top: 48px; }
+.sub { color: var(--ink-2); margin: 0 0 20px; max-width: 780px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.tile .v { font-size: 34px; font-weight: 600; line-height: 1.1; }
+.tile .l { font-size: 14px; color: var(--ink-2); margin-top: 6px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.seg button { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--ink-2); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.seg button:focus-visible, .sys:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 6px 0 2px; }
+.chart-title { font-weight: 600; }
+.chart-desc { font-size: 13px; color: var(--muted); }
+svg text { font-family: inherit; }
+.tip { position: fixed; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.12); display: none; z-index: 10; }
+.tip b { font-weight: 600; }
+.linkbtn { font: inherit; font-size: 13px; background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-weight: 600; color: var(--ink-2); font-size: 13px; }
+tr.safi td { background: var(--accent-wash); font-weight: 600; }
+td.best { font-weight: 700; }
+td.best::after { content: " ▲"; font-size: 10px; color: var(--muted); }
+#asrTable td.best::after, td.bestlow::after { content: " ▼"; font-size: 10px; color: var(--muted); }
+td.bestlow { font-weight: 700; }
+#asrRel th, #vadTable th, #bvTable th { white-space: normal; }
+#asrTable th { white-space: normal; }
+.scroll { overflow-x: auto; }
+.samples { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 14px; }
+.sample h4 { margin: 0; font-size: 16px; }
+.sample .meta { font-size: 13px; color: var(--muted); margin: 2px 0 12px; }
+.sys { display: flex; justify-content: space-between; align-items: center; width: 100%; font: inherit; font-size: 14px;
+  padding: 7px 10px; margin: 0 0 4px; border-radius: 8px; border: 1px solid var(--border); background: transparent;
+  color: var(--ink); cursor: pointer; text-align: left; }
+.sys .sc { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sys.on { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.sys.hl { font-weight: 600; }
+.sys .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--other); }
+.sys.hl .dot { background: var(--accent); }
+.sys.ref .dot { background: var(--noisy); }
+.player { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.play { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 999px; border: 0; cursor: pointer;
+  background: var(--ink); color: var(--surface); min-width: 84px; }
+.bar { flex: 1; height: 4px; background: var(--grid); border-radius: 2px; position: relative; cursor: pointer; }
+.bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 2px; width: 0; }
+.note { font-size: 14px; color: var(--ink-2); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+ul.tight { margin: 6px 0; padding-left: 20px; } ul.tight li { margin: 4px 0; }
+footer { margin-top: 64px; font-size: 13px; color: var(--muted); }
+code { font-size: 13px; background: var(--grid); padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Hamsa AI · Speech Enhancement Research</div>
+  <h1>Hamsa Safi v1</h1>
+  <p class="lede">Real-time noise suppression built for Arabic voice agents. Streaming at 10 ms frames on one CPU core, it gives the
+    highest perceived quality of every system tested in every condition (Arabic and English, phone and wideband, synthetic and real),
+    the best speech recognition on wideband audio, and the fewest false voice triggers from background talkers on phone calls.</p>
+
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Benchmark</h2>
+  <p class="sub">Four conditions, six metrics, 876 noisy clips per system. The noise comes from a public test set (MS-SNSD) that was never
+    used to train Safi. Every system runs in real-time streaming mode at full suppression strength.</p>
+  <div class="card">
+    <div class="seg" id="setSeg" role="group" aria-label="Condition"></div>
+    <div class="seg" id="metSeg" role="group" aria-label="Metric"></div>
+    <div class="chart-head">
+      <div><div class="chart-title" id="chartTitle"></div><div class="chart-desc" id="chartDesc"></div></div>
+      <button class="linkbtn" id="tblToggle" aria-expanded="false">Show as table</button>
+    </div>
+    <div id="chart"></div>
+    <div id="chartTable" class="scroll" hidden></div>
+  </div>
+
+  <h2>Listen</h2>
+  <p class="sub">Selected clips from the benchmark. Press play, then switch systems mid-sentence. Playback continues from the same
+    point. Each clip is played at one common gain for every system, so you hear each output at its true level. If a system removes part of the speech, it sounds quieter. Scores shown are PESQ / DNSMOS OVRL for that clip.</p>
+  <div class="samples" id="samples"></div>
+
+  <h2>Real-world recordings</h2>
+  <p class="sub">Synthetic mixtures are controlled; real calls are messy. These are genuine noisy Arabic recordings from Mozilla
+    Common Voice (CC0): people speaking into their own laptops and phones, with real rooms, fans, traffic and echo. Nothing was added.
+    There is no clean reference, so quality is scored with DNSMOS P.835. We searched all ~66,000 Arabic clips for heavy background noise
+    (estimated SNR below 25 dB), then kept the 100 noisiest (by DNSMOS) whose speech is still intelligible, one per speaker. They're tested both as recorded (16 kHz)
+    and through a G.711 phone channel.</p>
+  <div class="tiles" id="realTiles"></div>
+  <div class="card scroll" style="margin-top:12px"><table id="realTable"></table>
+    <p class="note" style="margin-bottom:0">Safi leads every system on real recordings, both at 16 kHz and over the phone channel.</p></div>
+  <h3>Listen: real recordings</h3>
+  <div class="samples" id="realSamples"></div>
+
+  <h2>Speech recognition</h2>
+  <p class="sub">For voice agents, what matters is what the ASR hears. We transcribed every output with an independent recogniser,
+    OpenAI Whisper large-v3 (not trained or tuned by us), and scored it against the human transcripts by character error rate (CER, the usual primary metric for
+    Arabic) and word error rate (WER). The relative figure takes the other system's error as the baseline: (other − Safi) / other.</p>
+  <div class="card scroll"><div class="seg" id="asrSeg" role="group" aria-label="ASR metric"></div>
+    <h3 style="margin-top:4px">Safi's error relative to each system</h3><table id="asrRel"></table>
+    <h3>Error rate (lower is better)</h3><table id="asrTable"></table>
+    <p class="note" style="margin-bottom:0">On wideband audio Safi has the lowest error of every system, Arabic and English, real and synthetic;
+      the gains over both Krisp models on synthetic wideband are statistically significant. On phone audio Safi and Krisp Tel v2 are on par: the
+      differences are within ±3% and their 95% confidence intervals include zero.</p></div>
+
+  <h2>Voice activity detection</h2>
+  <p class="sub">A voice agent decides when the caller is talking with a VAD, usually Silero. We ran Silero VAD v6 (default settings,
+    threshold 0.5) on every system's output and compared it frame by frame with speech labels from the clean reference.</p>
+  <div class="tiles" id="vadTiles"></div>
+  <h3>Background talkers, no caller</h3>
+  <p class="sub">Babble, a neighbour talking and airport announcements (MS-SNSD <code>noise_test</code>) in 10 s windows with no caller.
+    Every trigger is false: it is what makes an agent stop mid-sentence or answer someone who isn't the caller. Lower is better.</p>
+  <div class="card scroll"><table id="bvTable"></table>
+    <p class="note" style="margin-bottom:0">On non-speech noise (air conditioner, typing, doors, …) Silero already ignores the noise and every system stays at or near zero.</p></div>
+  <h3>Speech clips</h3>
+  <p class="sub">Missed speech: caller speech the VAD did not detect. False alarm: noise-only frames flagged as speech. Same 876 clips as the quality benchmark.</p>
+  <div class="card scroll"><table id="vadTable"></table></div>
+
+  <h2>Full results</h2>
+  <p class="sub">Means over all clips. ▲ marks the best processed system per column. Per-clip scores, SNR and noise-type breakdowns are in
+    <a href="https://github.com/hamsa-ai/hamsa-safi-v1/tree/main/results"><code>results/</code></a>.</p>
+  <div id="tables"></div>
+
+  <h2>Methodology</h2>
+  <div class="cols">
+    <div class="card">
+      <h3 style="margin-top:0">Test data</h3>
+      <ul class="tight note">
+        <li><b>Speech:</b> FLEURS test split, Egyptian Arabic (<code>ar_eg</code>, 250 utterances) and US English
+          (<code>en_us</code>, 188 utterances), filtered with DNSMOS for clean references. FLEURS is not in Safi's training data.</li>
+        <li><b>Noise:</b> MS-SNSD <code>noise_test</code>: air conditioner, babble, neighbour talking, airport announcements, typing,
+          door slams, copy machine, vacuum cleaner, eating. MS-SNSD is not in Safi's training data.</li>
+        <li><b>Mixing:</b> SNR −5, 0, 5, 10, 15 dB in equal shares, random talker level −30 to −20 dBFS.</li>
+        <li><b>Telephone:</b> 300–3400 Hz band-pass, 8 kHz, G.711 μ-law round trip, then fed to every system at 16 kHz.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Systems and settings</h3>
+      <ul class="tight note">
+        <li><b>Hamsa Safi v1:</b> streaming ONNX runtime, 10 ms frames, full strength.</li>
+        <li><b>Krisp:</b> SDK 1.4.0, <code>krisp-viva-tel-v2</code> and <code>krisp-viva-pro-v1</code>, 16 kHz, 10 ms frames, level 100.</li>
+        <li><b>RNNoise:</b> reference model via <code>pyrnnoise</code>, 48 kHz.</li>
+        <li><b>Hush:</b> <code>weya-ai/hush</code> with the stateful ONNX streaming runtime, full strength. Its 0.5 wet/dry default scored lower on wideband audio.</li>
+        <li>Fresh session per clip. No system saw the test clips.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Metrics</h3>
+      <ul class="tight note">
+        <li><b>PESQ</b> (ITU-T P.862): narrowband against the 8 kHz reference on phone sets, wideband otherwise.</li>
+        <li><b>STOI</b> intelligibility and <b>SI-SDR</b> fidelity, against the clean reference.</li>
+        <li><b>DNSMOS P.835</b> (SIG / BAK / OVRL): a MOS predictor that needs no reference, trained on human P.835 ratings.</li>
+        <li>Each system's algorithmic delay is compensated by cross-correlation before intrusive scoring.</li>
+        <li><b>ASR:</b> Whisper large-v3 (faster-whisper, fp16), CER and WER per clip, same clips for every system.</li>
+        <li><b>VAD:</b> Silero VAD v6, default settings, 32 ms frames, labels from the clean reference.</li>
+        <li><b>Statistics:</b> paired bootstrap, 2,000 resamples, 95% intervals for every Safi-vs-system gap. A difference counts as a win only when the interval excludes zero.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Where competitors lead</h3>
+      <ul class="tight note">
+        <li><b>Missed speech on phone audio:</b> Krisp keeps more of the caller's speech for the VAD (Arabic phone: <span id="missLead"></span>; significant).
+          On Arabic wideband Safi misses the least speech of any system.</li>
+        <li><b>STOI on phone audio:</b> Krisp Tel v2 scores higher on intelligibility (<span id="stoiLead"></span>).</li>
+        <li><b>CPU:</b> Safi needs about twice Krisp's CPU time per frame; it still runs more than 5× faster than real time on one core.</li>
+        <li>All intervals: <code>results/significance.csv</code> and <code>results/significance_asr_vad.csv</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Deployment</h2>
+  <div class="card scroll">
+    <table id="deploy"></table>
+    <p class="note" style="margin-bottom:0">CPU time per 10 ms frame, single thread, AMD EPYC 7R32 (AWS c5a/m5a class), median of 3 runs. Delay is
+      measured by cross-correlation on the benchmark.</p>
+  </div>
+
+  <footer>
+    © 2026 Hamsa AI. Benchmark audio: FLEURS (CC BY 4.0, Google) mixed with MS-SNSD noise (MIT, Microsoft), and Mozilla Common Voice (CC0). Sample clips are
+    distributed under CC BY 4.0. Krisp, RNNoise and Hush are trademarks or projects of their respective owners.
+    They were evaluated as published, with the settings listed above.
+  </footer>
+</main>
+<div class="tip" id="tip" role="tooltip"></div>
+<script>
+const DATA = {"sets":[{"key":"ar_tel","title":"Arabic \u00b7 telephone","sub":"8 kHz G.711 phone channel"},{"key":"ar_wb","title":"Arabic \u00b7 wideband","sub":"16 kHz VoIP / WebRTC"},{"key":"en_tel","title":"English \u00b7 telephone","sub":"8 kHz G.711 phone channel"},{"key":"en_wb","title":"English \u00b7 wideband","sub":"16 kHz VoIP / WebRTC"}],"systems":[{"key":"safi","name":"Hamsa Safi v1"},{"key":"krisp_tel","name":"Krisp VIVA Tel v2"},{"key":"krisp_pro","name":"Krisp VIVA Pro v1"},{"key":"rnnoise","name":"RNNoise"},{"key":"hush","name":"Hush"},{"key":"noisy","name":"Unprocessed"}],"metrics":[{"key":"pesq","label":"PESQ","desc":"ITU-T P.862 perceptual quality (NB on phone sets, WB on wideband)"},{"key":"stoi","label":"STOI","desc":"short-time objective intelligibility"},{"key":"si_sdr","label":"SI-SDR (dB)","desc":"scale-invariant signal-to-distortion ratio"},{"key":"dnsmos_sig","label":"DNSMOS SIG","desc":"speech-signal quality (P.835, reference-free)"},{"key":"dnsmos_bak","label":"DNSMOS BAK","desc":"background-noise quality (P.835)"},{"key":"dnsmos_ovrl","label":"DNSMOS OVRL","desc":"overall perceived quality (P.835)"}],"summary":{"ar_tel":{"safi":{"pesq":2.6558,"stoi":0.8282,"si_sdr":11.2995,"dnsmos_sig":3.0192,"dnsmos_bak":3.9733,"dnsmos_ovrl":2.7307},"krisp_tel":{"pesq":2.6017,"stoi":0.8515,"si_sdr":10.8691,"dnsmos_sig":2.7233,"dnsmos_bak":3.8938,"dnsmos_ovrl":2.4629},"krisp_pro":{"pesq":2.5347,"stoi":0.8437,"si_sdr":8.5883,"dnsmos_sig":2.7115,"dnsmos_bak":3.8784,"dnsmos_ovrl":2.45},"rnnoise":{"pesq":2.1199,"stoi":0.7922,"si_sdr":7.7248,"dnsmos_sig":2.902,"dnsmos_bak":3.8001,"dnsmos_ovrl":2.5795},"hush":{"pesq":1.8518,"stoi":0.69,"si_sdr":1.282,"dnsmos_sig":2.4945,"dnsmos_bak":3.577,"dnsmos_ovrl":2.1219},"noisy":{"pesq":1.9873,"stoi":0.792,"si_sdr":5.7338,"dnsmos_sig":2.6938,"dnsmos_bak":2.2797,"dnsmos_ovrl":2.0122}},"ar_wb":{"safi":{"pesq":2.1911,"stoi":0.8924,"si_sdr":12.6797,"dnsmos_sig":3.3796,"dnsmos_bak":3.9934,"dnsmos_ovrl":3.0824},"krisp_tel":{"pesq":1.8145,"stoi":0.7828,"si_sdr":6.6988,"dnsmos_sig":2.812,"dnsmos_bak":3.8844,"dnsmos_ovrl":2.5407},"krisp_pro":{"pesq":1.906,"stoi":0.8723,"si_sdr":7.9152,"dnsmos_sig":3.0104,"dnsmos_bak":3.9362,"dnsmos_ovrl":2.745},"rnnoise":{"pesq":1.5967,"stoi":0.856,"si_sdr":8.9827,"dnsmos_sig":3.1753,"dnsmos_bak":3.7752,"dnsmos_ovrl":2.8145},"hush":{"pesq":1.5575,"stoi":0.793,"si_sdr":4.7256,"dnsmos_sig":3.0524,"dnsmos_bak":3.3565,"dnsmos_ovrl":2.5309},"noisy":{"pesq":1.3325,"stoi":0.7945,"si_sdr":4.211,"dnsmos_sig":2.6916,"dnsmos_bak":2.0667,"dnsmos_ovrl":1.9742}},"en_tel":{"safi":{"pesq":2.0813,"stoi":0.6822,"si_sdr":6.016,"dnsmos_sig":2.8893,"dnsmos_bak":4.0344,"dnsmos_ovrl":2.6071},"krisp_tel":{"pesq":2.0561,"stoi":0.7166,"si_sdr":6.1336,"dnsmos_sig":2.6568,"dnsmos_bak":3.938,"dnsmos_ovrl":2.3937},"krisp_pro":{"pesq":1.9627,"stoi":0.7059,"si_sdr":4.9687,"dnsmos_sig":2.6173,"dnsmos_bak":3.9203,"dnsmos_ovrl":2.354},"rnnoise":{"pesq":1.4989,"stoi":0.4683,"si_sdr":-4.5391,"dnsmos_sig":2.4944,"dnsmos_bak":3.8848,"dnsmos_ovrl":2.198},"hush":{"pesq":1.6412,"stoi":0.5701,"si_sdr":-0.7268,"dnsmos_sig":2.3629,"dnsmos_bak":3.6955,"dnsmos_ovrl":2.0276},"noisy":{"pesq":2.0031,"stoi":0.7095,"si_sdr":3.9575,"dnsmos_sig":2.5749,"dnsmos_bak":2.0494,"dnsmos_ovrl":1.8665}},"en_wb":{"safi":{"pesq":1.735,"stoi":0.7628,"si_sdr":9.2122,"dnsmos_sig":3.3713,"dnsmos_bak":4.0733,"dnsmos_ovrl":3.1054},"krisp_tel":{"pesq":1.5409,"stoi":0.7029,"si_sdr":6.3384,"dnsmos_sig":2.94,"dnsmos_bak":3.9505,"dnsmos_ovrl":2.6777},"krisp_pro":{"pesq":1.5564,"stoi":0.7365,"si_sdr":7.124,"dnsmos_sig":3.0056,"dnsmos_bak":3.9876,"dnsmos_ovrl":2.7524},"rnnoise":{"pesq":1.4356,"stoi":0.7011,"si_sdr":5.4525,"dnsmos_sig":3.2039,"dnsmos_bak":3.9234,"dnsmos_ovrl":2.8918},"hush":{"pesq":1.4308,"stoi":0.6783,"si_sdr":3.5628,"dnsmos_sig":3.0842,"dnsmos_bak":3.5204,"dnsmos_ovrl":2.6111},"noisy":{"pesq":1.3449,"stoi":0.7084,"si_sdr":4.0404,"dnsmos_sig":2.6267,"dnsmos_bak":1.9601,"dnsmos_ovrl":1.8966}}},"n":{"ar_tel":250,"ar_wb":250,"en_tel":188,"en_wb":188},"samples":[{"id":"ar_tel-ar107","set":"ar_tel","snr":5,"noise":"vacuum cleaner","scores":{"safi":{"pesq":2.63,"dnsmos":2.8},"krisp_tel":{"pesq":2.18,"dnsmos":2.37},"krisp_pro":{"pesq":2.23,"dnsmos":2.24},"rnnoise":{"pesq":2.0,"dnsmos":2.44},"hush":{"pesq":1.67,"dnsmos":2.37},"noisy":{"pesq":1.69,"dnsmos":1.24}}},{"id":"ar_tel-ar105","set":"ar_tel","snr":-5,"noise":"door slams","scores":{"safi":{"pesq":3.15,"dnsmos":2.93},"krisp_tel":{"pesq":2.39,"dnsmos":2.58},"krisp_pro":{"pesq":2.38,"dnsmos":2.6},"rnnoise":{"pesq":2.33,"dnsmos":2.58},"hush":{"pesq":2.05,"dnsmos":2.1},"noisy":{"pesq":1.44,"dnsmos":2.05}}},{"id":"ar_tel-ar165","set":"ar_tel","snr":-5,"noise":"copy machine","scores":{"safi":{"pesq":1.6,"dnsmos":1.99},"krisp_tel":{"pesq":1.44,"dnsmos":1.43},"krisp_pro":{"pesq":1.48,"dnsmos":1.35},"rnnoise":{"pesq":1.32,"dnsmos":1.66},"hush":{"pesq":1.22,"dnsmos":1.49},"noisy":{"pesq":1.38,"dnsmos":1.07}}},{"id":"ar_tel-ar247","set":"ar_tel","snr":5,"noise":"eating / munching","scores":{"safi":{"pesq":2.6,"dnsmos":2.76},"krisp_tel":{"pesq":2.12,"dnsmos":2.42},"krisp_pro":{"pesq":2.15,"dnsmos":2.35},"rnnoise":{"pesq":1.74,"dnsmos":2.56},"hush":{"pesq":1.95,"dnsmos":2.17},"noisy":{"pesq":1.55,"dnsmos":1.79}}},{"id":"ar_wb-ar011","set":"ar_wb","snr":0,"noise":"babble (crowd)","scores":{"safi":{"pesq":1.89,"dnsmos":3.18},"krisp_tel":{"pesq":1.1,"dnsmos":1.79},"krisp_pro":{"pesq":1.6,"dnsmos":2.42},"rnnoise":{"pesq":1.27,"dnsmos":2.86},"hush":{"pesq":1.17,"dnsmos":2.18},"noisy":{"pesq":1.21,"dnsmos":1.94}}},{"id":"ar_wb-ar222","set":"ar_wb","snr":5,"noise":"door slams","scores":{"safi":{"pesq":2.46,"dnsmos":3.32},"krisp_tel":{"pesq":1.07,"dnsmos":1.96},"krisp_pro":{"pesq":2.08,"dnsmos":3.29},"rnnoise":{"pesq":1.84,"dnsmos":3.19},"hush":{"pesq":1.61,"dnsmos":2.32},"noisy":{"pesq":1.18,"dnsmos":2.57}}},{"id":"ar_wb-ar212","set":"ar_wb","snr":5,"noise":"neighbour talking","scores":{"safi":{"pesq":1.81,"dnsmos":3.13},"krisp_tel":{"pesq":1.12,"dnsmos":2.42},"krisp_pro":{"pesq":1.48,"dnsmos":3.14},"rnnoise":{"pesq":1.5,"dnsmos":2.55},"hush":{"pesq":1.5,"dnsmos":2.87},"noisy":{"pesq":1.2,"dnsmos":2.63}}},{"id":"ar_wb-ar021","set":"ar_wb","snr":0,"noise":"copy machine","scores":{"safi":{"pesq":1.64,"dnsmos":3.38},"krisp_tel":{"pesq":1.16,"dnsmos":1.88},"krisp_pro":{"pesq":1.3,"dnsmos":2.34},"rnnoise":{"pesq":1.18,"dnsmos":2.47},"hush":{"pesq":1.39,"dnsmos":2.42},"noisy":{"pesq":1.1,"dnsmos":1.95}}},{"id":"ar_wb-ar105","set":"ar_wb","snr":-5,"noise":"door slams","scores":{"safi":{"pesq":2.04,"dnsmos":3.25},"krisp_tel":{"pesq":1.09,"dnsmos":1.35},"krisp_pro":{"pesq":1.64,"dnsmos":2.8},"rnnoise":{"pesq":1.45,"dnsmos":2.7},"hush":{"pesq":1.4,"dnsmos":2.69},"noisy":{"pesq":1.07,"dnsmos":1.7}}},{"id":"en_tel-en116","set":"en_tel","snr":0,"noise":"vacuum cleaner","scores":{"safi":{"pesq":2.46,"dnsmos":2.7},"krisp_tel":{"pesq":2.19,"dnsmos":2.05},"krisp_pro":{"pesq":1.94,"dnsmos":2.06},"rnnoise":{"pesq":1.23,"dnsmos":2.08},"hush":{"pesq":1.67,"dnsmos":1.86},"noisy":{"pesq":1.54,"dnsmos":1.12}}},{"id":"en_wb-en016","set":"en_wb","snr":0,"noise":"keyboard typing","scores":{"safi":{"pesq":2.48,"dnsmos":3.29},"krisp_tel":{"pesq":1.69,"dnsmos":2.93},"krisp_pro":{"pesq":1.81,"dnsmos":2.97},"rnnoise":{"pesq":1.7,"dnsmos":3.12},"hush":{"pesq":1.4,"dnsmos":2.89},"noisy":{"pesq":1.11,"dnsmos":2.38}}}],"win":{"ar_tel":92,"ar_wb":96,"en_tel":91,"en_wb":98},"real":{"sets":[{"key":"ar_real","title":"Arabic \u00b7 real recording","sub":"Common Voice, 16 kHz"},{"key":"ar_real_tel","title":"Arabic \u00b7 real recording, phone","sub":"Common Voice via 8 kHz G.711 channel"}],"n":100,"summary":{"ar_real":{"safi":{"dnsmos_sig":3.1224,"dnsmos_bak":3.9842,"dnsmos_ovrl":2.8216},"krisp_tel":{"dnsmos_sig":2.9468,"dnsmos_bak":3.8979,"dnsmos_ovrl":2.641},"krisp_pro":{"dnsmos_sig":2.8805,"dnsmos_bak":3.8165,"dnsmos_ovrl":2.5479},"rnnoise":{"dnsmos_sig":2.9265,"dnsmos_bak":3.8302,"dnsmos_ovrl":2.5889},"hush":{"dnsmos_sig":2.7661,"dnsmos_bak":3.6896,"dnsmos_ovrl":2.3781},"noisy":{"dnsmos_sig":2.9939,"dnsmos_bak":2.5899,"dnsmos_ovrl":2.1484}},"ar_real_tel":{"safi":{"dnsmos_sig":2.8546,"dnsmos_bak":3.9437,"dnsmos_ovrl":2.557},"krisp_tel":{"dnsmos_sig":2.7271,"dnsmos_bak":3.8709,"dnsmos_ovrl":2.4352},"krisp_pro":{"dnsmos_sig":2.7168,"dnsmos_bak":3.8635,"dnsmos_ovrl":2.4234},"rnnoise":{"dnsmos_sig":2.3611,"dnsmos_bak":3.8114,"dnsmos_ovrl":2.0432},"hush":{"dnsmos_sig":2.248,"dnsmos_bak":3.8359,"dnsmos_ovrl":1.9762},"noisy":{"dnsmos_sig":2.9224,"dnsmos_bak":2.994,"dnsmos_ovrl":2.2625}}},"win":{"ar_real":{"krisp_tel":82,"krisp_pro":90},"ar_real_tel":{"krisp_tel":70,"krisp_pro":74}},"samples":[{"id":"ar_real-real012","set":"ar_real","real":true,"scores":{"safi":{"dnsmos":3.23},"krisp_tel":{"dnsmos":2.64},"krisp_pro":{"dnsmos":2.62},"rnnoise":{"dnsmos":2.99},"hush":{"dnsmos":2.64},"noisy":{"dnsmos":1.64}}},{"id":"ar_real-real021","set":"ar_real","real":true,"scores":{"safi":{"dnsmos":3.19},"krisp_tel":{"dnsmos":2.7},"krisp_pro":{"dnsmos":2.49},"rnnoise":{"dnsmos":2.67},"hush":{"dnsmos":2.73},"noisy":{"dnsmos":1.69}}},{"id":"ar_real-real014","set":"ar_real","real":true,"scores":{"safi":{"dnsmos":2.7},"krisp_tel":{"dnsmos":1.95},"krisp_pro":{"dnsmos":2.31},"rnnoise":{"dnsmos":2.45},"hush":{"dnsmos":1.95},"noisy":{"dnsmos":1.88}}},{"id":"ar_real_tel-real007","set":"ar_real_tel","real":true,"scores":{"safi":{"dnsmos":2.97},"krisp_tel":{"dnsmos":2.57},"krisp_pro":{"dnsmos":2.69},"rnnoise":{"dnsmos":2.79},"hush":{"dnsmos":2.89},"noisy":{"dnsmos":1.89}}},{"id":"ar_real_tel-real019","set":"ar_real_tel","real":true,"scores":{"safi":{"dnsmos":3.2},"krisp_tel":{"dnsmos":2.62},"krisp_pro":{"dnsmos":2.52},"rnnoise":{"dnsmos":2.31},"hush":{"dnsmos":2.0},"noisy":{"dnsmos":1.97}}},{"id":"ar_real_tel-real012","set":"ar_real_tel","real":true,"scores":{"safi":{"dnsmos":2.74},"krisp_tel":{"dnsmos":2.11},"krisp_pro":{"dnsmos":2.11},"rnnoise":{"dnsmos":1.76},"hush":{"dnsmos":1.93},"noisy":{"dnsmos":2.18}}}]},"asr":{"sig":{"cer":{"ar_wb":{"krisp_tel":"better","krisp_pro":"better","rnnoise":"better","hush":"better"},"ar_tel":{"krisp_tel":"ns","krisp_pro":"ns","rnnoise":"better","hush":"better"},"ar_real":{"krisp_tel":"ns","krisp_pro":"better","rnnoise":"better","hush":"better"},"ar_real_tel":{"krisp_tel":"ns","krisp_pro":"ns","rnnoise":"better","hush":"better"},"en_wb":{"krisp_tel":"better","krisp_pro":"better","rnnoise":"better","hush":"better"},"en_tel":{"krisp_tel":"ns","krisp_pro":"better","rnnoise":"better","hush":"better"}},"wer":{"ar_wb":{"krisp_tel":"better","krisp_pro":"better","rnnoise":"better","hush":"better"},"ar_tel":{"krisp_tel":"ns","krisp_pro":"better","rnnoise":"better","hush":"better"},"ar_real":{"krisp_tel":"ns","krisp_pro":"better","rnnoise":"better","hush":"better"},"ar_real_tel":{"krisp_tel":"ns","krisp_pro":"ns","rnnoise":"better","hush":"better"},"en_wb":{"krisp_tel":"better","krisp_pro":"better","rnnoise":"better","hush":"better"},"en_tel":{"krisp_tel":"ns","krisp_pro":"better","rnnoise":"better","hush":"better"}}},"n":{"ar_wb":150,"ar_tel":150,"ar_real":100,"ar_real_tel":100,"en_wb":100,"en_tel":100},"cer":{"ar_wb":{"clean":3.0,"hush":22.6,"krisp_pro":17.4,"krisp_tel":25.4,"rnnoise":19.9,"safi":13.3},"ar_tel":{"clean":3.5,"hush":43.5,"krisp_pro":25.0,"krisp_tel":25.2,"rnnoise":32.9,"safi":24.6},"ar_real":{"hush":26.0,"krisp_pro":19.2,"krisp_tel":16.3,"rnnoise":25.5,"safi":15.9},"ar_real_tel":{"hush":54.9,"krisp_pro":32.9,"krisp_tel":27.3,"rnnoise":61.9,"safi":28.2},"en_wb":{"clean":2.1,"hush":22.5,"krisp_pro":17.0,"krisp_tel":22.5,"rnnoise":24.5,"safi":13.4},"en_tel":{"clean":2.5,"hush":44.8,"krisp_pro":30.1,"krisp_tel":27.0,"rnnoise":57.7,"safi":26.2}},"wer":{"ar_wb":{"clean":9.3,"hush":38.3,"krisp_pro":31.9,"krisp_tel":39.5,"rnnoise":35.5,"safi":26.5},"ar_tel":{"clean":10.9,"hush":60.8,"krisp_pro":43.9,"krisp_tel":43.3,"rnnoise":51.0,"safi":41.2},"ar_real":{"hush":45.7,"krisp_pro":37.7,"krisp_tel":33.5,"rnnoise":44.1,"safi":33.2},"ar_real_tel":{"hush":75.0,"krisp_pro":53.4,"krisp_tel":49.4,"rnnoise":80.0,"safi":49.8},"en_wb":{"clean":4.7,"hush":31.2,"krisp_pro":25.0,"krisp_tel":30.2,"rnnoise":34.8,"safi":20.5},"en_tel":{"clean":5.4,"hush":55.3,"krisp_pro":40.3,"krisp_tel":36.7,"rnnoise":68.8,"safi":34.8}}},"vad":{"speech":{"ar_tel":{"hush":{"miss":26.3,"fa":15.7,"f1":83.2},"krisp_pro":{"miss":7.2,"fa":20.2,"f1":94.0},"krisp_tel":{"miss":8.3,"fa":18.6,"f1":93.6},"noisy":{"miss":7.2,"fa":28.6,"f1":93.1},"rnnoise":{"miss":8.1,"fa":19.3,"f1":93.6},"safi":{"miss":11.4,"fa":17.6,"f1":92.0}},"ar_wb":{"hush":{"miss":4.4,"fa":20.6,"f1":95.9},"krisp_pro":{"miss":3.3,"fa":16.6,"f1":96.8},"krisp_tel":{"miss":13.6,"fa":15.7,"f1":91.3},"noisy":{"miss":4.9,"fa":27.8,"f1":95.0},"rnnoise":{"miss":3.5,"fa":20.8,"f1":96.3},"safi":{"miss":3.2,"fa":18.9,"f1":96.7}},"en_tel":{"hush":{"miss":46.8,"fa":10.3,"f1":68.0},"krisp_pro":{"miss":21.4,"fa":18.8,"f1":85.3},"krisp_tel":{"miss":22.3,"fa":18.9,"f1":84.8},"noisy":{"miss":16.9,"fa":31.5,"f1":86.3},"rnnoise":{"miss":45.7,"fa":17.2,"f1":68.1},"safi":{"miss":23.8,"fa":17.5,"f1":84.0}},"en_wb":{"hush":{"miss":15.9,"fa":18.4,"f1":89.5},"krisp_pro":{"miss":13.9,"fa":17.9,"f1":90.7},"krisp_tel":{"miss":16.3,"fa":19.0,"f1":89.2},"noisy":{"miss":13.7,"fa":30.8,"f1":89.5},"rnnoise":{"miss":11.6,"fa":25.3,"f1":91.3},"safi":{"miss":12.9,"fa":18.4,"f1":91.3}}},"noise":{"other":{"noise_only_tel":{"hush":{"per_min":0.2,"pct":0.1},"krisp_pro":{"per_min":0.0,"pct":0.0},"krisp_tel":{"per_min":0.0,"pct":0.0},"noisy":{"per_min":0.1,"pct":0.1},"rnnoise":{"per_min":0.4,"pct":0.5},"safi":{"per_min":0.0,"pct":0.0}},"noise_only_wb":{"hush":{"per_min":0.5,"pct":0.3},"krisp_pro":{"per_min":0.3,"pct":0.2},"krisp_tel":{"per_min":0.0,"pct":0.0},"noisy":{"per_min":0.0,"pct":0.0},"rnnoise":{"per_min":0.4,"pct":0.4},"safi":{"per_min":0.0,"pct":0.0}}},"voice":{"noise_only_tel":{"hush":{"per_min":5.7,"pct":12.5},"krisp_pro":{"per_min":7.3,"pct":19.0},"krisp_tel":{"per_min":5.7,"pct":15.5},"noisy":{"per_min":10.8,"pct":42.1},"rnnoise":{"per_min":8.8,"pct":24.7},"safi":{"per_min":4.0,"pct":14.1}},"noise_only_wb":{"hush":{"per_min":17.2,"pct":49.8},"krisp_pro":{"per_min":10.8,"pct":34.5},"krisp_tel":{"per_min":10.0,"pct":31.1},"noisy":{"per_min":13.5,"pct":53.8},"rnnoise":{"per_min":16.8,"pct":70.7},"safi":{"per_min":9.2,"pct":31.1}}}},"n_speech":{"ar_tel":250,"ar_wb":250,"en_tel":188,"en_wb":188},"min_noise":{"voice":6.0,"other":12.0}}};
+const $ = (s, r = document) => r.querySelector(s);
+const sysName = Object.fromEntries(DATA.systems.map(s => [s.key, s.name]));
+const fmt = (m, v) => m === "stoi" ? v.toFixed(3) : v.toFixed(2);
+const metLabel = (m, set) => m === "pesq" ? (set.endsWith("_tel") ? "PESQ-NB" : "PESQ-WB") : DATA.metrics.find(x => x.key === m).label;
+const S = DATA.summary;
+
+// ---- tiles
+const gap = (set, m, a, b) => S[set][a][m] - S[set][b][m];
+const relAsr = (set, k, met = "cer") => Math.round((DATA.asr[met][set][k] - DATA.asr[met][set].safi) / DATA.asr[met][set][k] * 100);
+const tiles = [
+  ["6 / 6", "metrics best or tied-best on Arabic wideband, against Krisp, RNNoise and Hush"],
+  [`+${gap("ar_tel", "dnsmos_ovrl", "safi", "krisp_tel").toFixed(2)} MOS`, "perceived quality (DNSMOS OVRL) over Krisp Tel v2 on Arabic phone calls"],
+  [`${relAsr("ar_wb", "krisp_tel")}% lower`, "Whisper error than Krisp Tel v2 on Arabic wideband speech (" + DATA.asr.cer.ar_wb.safi.toFixed(1) + "% vs " + DATA.asr.cer.ar_wb.krisp_tel.toFixed(1) + "% CER)"],
+  [`${DATA.vad.noise.voice.noise_only_tel.safi.per_min.toFixed(1)} / min`, "false VAD triggers from background talkers on phone audio, fewest of all systems (Krisp Tel v2: " + DATA.vad.noise.voice.noise_only_tel.krisp_tel.per_min.toFixed(1) + ")"],
+];
+$("#tiles").innerHTML = tiles.map(([v, l]) => `<div class="card tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+// ---- chart
+let cur = { set: "ar_tel", met: "dnsmos_ovrl" };
+const ORDER = DATA.systems.map(s => s.key);
+function seg(el, items, key) {
+  el.innerHTML = items.map(([k, l]) => `<button data-k="${k}" aria-pressed="${cur[key] === k}">${l}</button>`).join("");
+  el.onclick = e => { const b = e.target.closest("button"); if (!b) return; cur[key] = b.dataset.k; draw(); };
+}
+const tip = $("#tip");
+function showTip(e, html) { tip.innerHTML = html; tip.style.display = "block";
+  const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8); tip.style.left = x + "px"; tip.style.top = (e.clientY + 14) + "px"; }
+function draw() {
+  seg($("#setSeg"), DATA.sets.map(s => [s.key, s.title]), "set");
+  seg($("#metSeg"), DATA.metrics.map(m => [m.key, metLabel(m.key, cur.set)]), "met");
+  const set = DATA.sets.find(s => s.key === cur.set), m = DATA.metrics.find(x => x.key === cur.met);
+  $("#chartTitle").textContent = `${metLabel(m.key, set.key)} · ${set.title}`;
+  $("#chartDesc").textContent = `${m.desc}. Higher is better. n = ${DATA.n[set.key]} clips, ${set.sub}.`;
+  const vals = ORDER.map(k => [k, S[set.key][k][m.key]]);
+  // honest baselines: MOS-type scales start at their floor (1), STOI at 0, SI-SDR at min(0, data)
+  const step = m.key === "si_sdr" ? 5 : m.key === "stoi" ? 0.2 : 0.5;
+  const floor = { pesq: 1, dnsmos_sig: 1, dnsmos_bak: 1, dnsmos_ovrl: 1, stoi: 0 }[m.key] ?? Math.floor(Math.min(0, ...vals.map(v => v[1])) / step) * step;
+  const origin = m.key === "si_sdr" ? 0 : floor;
+  const maxv = Math.max(...vals.map(v => v[1]));
+  const hi = Math.ceil((maxv + step * 0.15) / step) * step;
+  const W = $("#chart").clientWidth || 900, left = Math.min(170, W * 0.36), right = 48, bh = 22, g = 10, top = 6;
+  const H = top + vals.length * (bh + g) + 26;
+  const x = v => left + (v - floor) / (hi - floor) * (W - left - right);
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="${$("#chartTitle").textContent}">`;
+  for (let t = floor; t <= hi + 1e-9; t += step) {
+    s += `<line x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${H - 22}" stroke="var(--grid)"/>` +
+         `<text x="${x(t)}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="middle">${+t.toFixed(2)}</text>`;
+  }
+  vals.forEach(([k, v], i) => {
+    const y = top + i * (bh + g), w = Math.max(2, Math.abs(x(v) - x(origin))), neg = v < origin;
+    const bx = neg ? x(v) : x(origin);
+    const fill = k === "safi" ? "var(--accent)" : k === "noisy" ? "var(--noisy)" : "var(--other)";
+    const bold = k === "safi" ? ' font-weight="600"' : "";
+    s += `<g class="bar-g" data-k="${k}">` +
+      `<rect x="0" y="${y - g / 2}" width="${W}" height="${bh + g}" fill="transparent"/>` +
+      `<text x="${left - 10}" y="${y + bh / 2 + 4}" font-size="13" text-anchor="end" fill="${k === "safi" ? "var(--ink)" : "var(--ink-2)"}"${bold}>${sysName[k]}</text>` +
+      (neg ? `<path d="M${bx + w},${y} h${-(w - 4)} a4,4 0 0 0 -4,4 v${bh - 8} a4,4 0 0 0 4,4 h${w - 4} z" fill="${fill}"/>`
+           : `<path d="M${bx},${y} h${w - 4} a4,4 0 0 1 4,4 v${bh - 8} a4,4 0 0 1 -4,4 h${-(w - 4)} z" fill="${fill}"/>`) +
+      `<text x="${neg ? x(origin) + 6 : bx + w + 6}" y="${y + bh / 2 + 4}" font-size="12" fill="${k === "safi" ? "var(--ink)" : "var(--ink-2)"}"${bold}>${fmt(m.key, v)}</text></g>`;
+  });
+  s += `<line x1="${x(origin)}" x2="${x(origin)}" y1="${top}" y2="${H - 22}" stroke="var(--axis)"/></svg>`;
+  $("#chart").innerHTML = s;
+  $("#chart").querySelectorAll(".bar-g").forEach(gEl => {
+    const k = gEl.dataset.k;
+    gEl.onmousemove = e => {
+      const d = S[set.key][k], sv = S[set.key].safi;
+      const rows = DATA.metrics.map(mm => `${metLabel(mm.key, set.key)}: <b>${fmt(mm.key, d[mm.key])}</b>`).join("<br>");
+      const delta = k === "safi" ? "" : `<br><span style="color:var(--muted)">Safi ${sv[m.key] - d[m.key] >= 0 ? "+" : ""}${fmt(m.key, sv[m.key] - d[m.key])} on ${metLabel(m.key, set.key)}</span>`;
+      showTip(e, `<b>${sysName[k]}</b><br>${rows}${delta}`);
+    };
+    gEl.onmouseleave = () => tip.style.display = "none";
+  });
+  $("#chartTable").innerHTML = table(set.key);
+}
+function table(setKey) {
+  const procs = ORDER.filter(k => k !== "noisy");
+  const best = Object.fromEntries(DATA.metrics.map(m => [m.key, Math.max(...procs.map(k => S[setKey][k][m.key]))]));
+  return `<table><thead><tr><th>System</th>${DATA.metrics.map(m => `<th>${metLabel(m.key, setKey)}</th>`).join("")}</tr></thead><tbody>` +
+    ORDER.map(k => `<tr class="${k === "safi" ? "safi" : ""}"><td>${sysName[k]}</td>` + DATA.metrics.map(m => {
+      const v = S[setKey][k][m.key]; const b = k !== "noisy" && Math.abs(v - best[m.key]) < 1e-9;
+      return `<td class="${b ? "best" : ""}">${fmt(m.key, v)}</td>`; }).join("") + "</tr>").join("") + "</tbody></table>";
+}
+$("#tblToggle").onclick = () => { const t = $("#chartTable"), c = $("#chart"); const show = t.hidden;
+  t.hidden = !show; c.hidden = show; $("#tblToggle").textContent = show ? "Show as chart" : "Show as table";
+  $("#tblToggle").setAttribute("aria-expanded", show); };
+addEventListener("resize", () => draw());
+draw();
+
+// ---- full tables
+$("#tables").innerHTML = DATA.sets.map(s => `<h3>${s.title} <span class="chart-desc">· ${s.sub} · n = ${DATA.n[s.key]}</span></h3>
+  <div class="card scroll">${table(s.key)}</div>`).join("");
+
+// ---- deployment
+const SPEED = { safi: [1.81, 30], krisp_tel: [0.95, 25], krisp_pro: [0.98, 28], rnnoise: [0.25, 20], hush: [0.84, 10] };
+$("#deploy").innerHTML = `<thead><tr><th>System</th><th>Streaming</th><th>CPU ms / 10 ms</th><th>Real-time factor</th><th>Delay (ms)</th></tr></thead><tbody>` +
+  ORDER.filter(k => k !== "noisy").map(k => { const [ms, lat] = SPEED[k];
+    return `<tr class="${k === "safi" ? "safi" : ""}"><td>${sysName[k]}</td><td>${ms === null ? "offline" : "10 ms frames"}</td>` +
+      `<td>${ms === null ? "–" : ms.toFixed(2)}</td><td>${ms === null ? "–" : (ms / 10).toFixed(2)}</td><td>${lat}</td></tr>`; }).join("") + "</tbody>";
+
+// ---- samples (A/B player: one audio element per card, switching keeps position)
+const setTitle = Object.fromEntries(DATA.sets.concat(DATA.real.sets).map(s => [s.key, s.title]));
+let playing = null;
+function renderSamples(el, list) {
+  el.innerHTML = list.map((sm, i) => {
+    const systems = ["noisy", "safi", "krisp_tel", "krisp_pro", "rnnoise", "hush"].concat(sm.real ? [] : ["clean"]);
+    const meta = sm.real ? "Real recording, no added noise · score: DNSMOS OVRL" : `Input SNR ${sm.snr >= 0 ? "+" : ""}${sm.snr} dB · scores: PESQ / DNSMOS OVRL`;
+    return `<div class="card sample" data-i="${i}">
+      <h4>${setTitle[sm.set]}${sm.real ? "" : ": " + sm.noise}</h4>
+      <div class="meta">${meta}</div>
+      ${systems.map(k => {
+        const sc = sm.scores[k]; const lbl = k === "clean" ? "Clean reference" : k === "noisy" ? (sm.real ? "Original recording" : "Noisy input") : sysName[k];
+        const txt = !sc ? "" : sm.real ? sc.dnsmos.toFixed(2) : sc.pesq.toFixed(2) + " / " + sc.dnsmos.toFixed(2);
+        return `<button class="sys ${k === "safi" ? "hl on" : ""} ${k === "noisy" || k === "clean" ? "ref" : ""}" data-k="${k}">
+          <span><span class="dot"></span>${lbl}</span><span class="sc">${txt}</span></button>`; }).join("")}
+      <div class="player"><button class="play">▶ Play</button><div class="bar"><i></i></div></div>
+      <audio preload="none" src="samples/${sm.id}/safi.wav"></audio>
+    </div>`; }).join("");
+  el.querySelectorAll(".sample").forEach(card => {
+    const au = $("audio", card), pb = $(".play", card), bar = $(".bar i", card), sm = list[card.dataset.i];
+    card.querySelectorAll(".sys").forEach(b => b.onclick = () => {
+      const t = au.currentTime, was = !au.paused;
+      card.querySelectorAll(".sys").forEach(x => x.classList.toggle("on", x === b));
+      au.preload = "auto";
+      au.src = `samples/${sm.id}/${b.dataset.k}.wav`;
+      au.addEventListener("loadedmetadata", () => { au.currentTime = Math.min(t, au.duration || t); }, { once: true });
+      if (was) au.play(); else au.load();
+    });
+    pb.onclick = () => { if (au.paused) { if (playing && playing !== au) playing.pause(); playing = au; au.play(); } else au.pause(); };
+    au.onplay = () => pb.textContent = "❚❚ Pause";
+    au.onpause = au.onended = () => pb.textContent = "▶ Play";
+    au.ontimeupdate = () => bar.style.width = (au.duration ? au.currentTime / au.duration * 100 : 0) + "%";
+    $(".bar", card).onclick = e => { const r = e.currentTarget.getBoundingClientRect(); if (au.duration) au.currentTime = (e.clientX - r.left) / r.width * au.duration; };
+  });
+}
+renderSamples($("#samples"), DATA.samples);
+renderSamples($("#realSamples"), DATA.real.samples);
+
+// ---- ASR tables (CER / WER toggle): relative to each system, then absolute (unprocessed input not shown)
+let asrMet = "cer";
+function drawAsr() {
+  $("#asrSeg").innerHTML = [["cer", "CER (character)"], ["wer", "WER (word)"]].map(([k, l]) => `<button data-k="${k}" aria-pressed="${asrMet === k}">${l}</button>`).join("");
+  $("#asrSeg").onclick = e => { const b = e.target.closest("button"); if (b) { asrMet = b.dataset.k; drawAsr(); } };
+  const A = DATA.asr[asrMet], cols = [["ar_wb", "Arabic wideband"], ["ar_tel", "Arabic phone"], ["ar_real", "Arabic real, 16 kHz"],
+    ["ar_real_tel", "Arabic real, phone"], ["en_wb", "English wideband"], ["en_tel", "English phone"]];
+  const procs = ORDER.filter(k => k !== "noisy"), comp = procs.filter(k => k !== "safi");
+  const head = `<thead><tr><th>${"%H%"}</th>${cols.map(([c, l]) => `<th>${l}<br><span style="font-weight:400;color:var(--muted)">n = ${DATA.asr.n[c]}</span></th>`).join("")}</tr></thead>`;
+  $("#asrRel").innerHTML = head.replace("%H%", "Safi vs") + "<tbody>" + comp.map(k => `<tr><td>${sysName[k]}</td>` + cols.map(([c]) => {
+      const r = (A[c][k] - A[c].safi) / A[c][k] * 100;
+      const sg = DATA.asr.sig[asrMet][c][k], raw = r >= 0.5 ? `${r.toFixed(0)}% lower` : r <= -0.5 ? `${(-r).toFixed(0)}% higher` : "equal";
+      const txt = sg === "ns" ? `on par <span style="color:var(--muted)">(${raw})</span>` : raw;
+      return `<td style="${sg === "better" ? "color:var(--good);font-weight:600" : "color:var(--ink-2)"}">${txt}</td>`; }).join("") + "</tr>").join("") + "</tbody>" +
+      `<caption style="caption-side:bottom;text-align:left;font-size:13px;color:var(--muted);padding-top:8px">Green = statistically significant (95% paired bootstrap). "On par" = the interval includes zero.</caption>`;
+  const best = Object.fromEntries(cols.map(([c]) => [c, Math.min(...procs.map(k => A[c][k]))]));
+  $("#asrTable").innerHTML = head.replace("%H%", "System") + "<tbody>" +
+    procs.map(k => `<tr class="${k === "safi" ? "safi" : ""}"><td>${sysName[k]}</td>` +
+      cols.map(([c]) => { const v = A[c][k]; const b = v === best[c]; return `<td class="${b ? "best" : ""}">${v.toFixed(1)}%</td>`; }).join("") + "</tr>").join("") + "</tbody>";
+}
+drawAsr();
+
+// ---- VAD
+{
+  const V = DATA.vad, procs = ORDER.filter(k => k !== "noisy"), B = V.noise.voice;
+  $("#vadTiles").innerHTML = [
+    [`${B.noise_only_tel.safi.per_min.toFixed(1)} / min`, `false triggers from background talkers on phone audio, fewest of all systems (Krisp Tel v2 ${B.noise_only_tel.krisp_tel.per_min.toFixed(1)}, Krisp Pro v1 ${B.noise_only_tel.krisp_pro.per_min.toFixed(1)})`],
+    [`${V.speech.ar_wb.safi.miss.toFixed(1)}%`, `missed speech on Arabic wideband, lowest of all systems (Krisp Tel v2 ${V.speech.ar_wb.krisp_tel.miss.toFixed(1)}%, Krisp Pro v1 ${V.speech.ar_wb.krisp_pro.miss.toFixed(1)}%)`],
+    [`${V.speech.ar_tel.safi.fa.toFixed(1)}%`, `false alarms in pauses on Arabic phone audio (Krisp Tel v2 ${V.speech.ar_tel.krisp_tel.fa.toFixed(1)}%, Krisp Pro v1 ${V.speech.ar_tel.krisp_pro.fa.toFixed(1)}%)`],
+  ].map(([v, l]) => `<div class="card tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  const lbl = k => k === "noisy" ? "No denoiser (raw noisy input)" : sysName[k];
+  const cell = (v, b, pct) => `<td class="${b ? "bestlow" : ""}">${v.toFixed(1)}${pct ? "%" : ""}</td>`;
+  $("#bvTable").innerHTML = `<thead><tr><th>System</th><th>Phone: false triggers / min</th><th>Phone: % time flagged</th><th>Wideband: false triggers / min</th><th>Wideband: % time flagged</th></tr></thead><tbody>` +
+    ORDER.map(k => `<tr class="${k === "safi" ? "safi" : ""}"><td>${lbl(k)}</td>` + ["noise_only_tel", "noise_only_wb"].map(st => ["per_min", "pct"].map(m => {
+      const v = B[st][k][m]; return cell(v, k !== "noisy" && v === Math.min(...procs.map(x => B[st][x][m])), m === "pct"); }).join("")).join("") + "</tr>").join("") + "</tbody>";
+  const sets = [["ar_tel", "Arabic phone"], ["ar_wb", "Arabic wideband"], ["en_tel", "English phone"], ["en_wb", "English wideband"]];
+  $("#vadTable").innerHTML = `<thead><tr><th rowspan="2">System</th>${sets.map(([, l]) => `<th colspan="3" style="text-align:center">${l}</th>`).join("")}</tr>
+    <tr>${sets.map(() => "<th>Missed</th><th>False alarm</th><th>F1</th>").join("")}</tr></thead><tbody>` +
+    ORDER.map(k => `<tr class="${k === "safi" ? "safi" : ""}"><td>${lbl(k)}</td>` + sets.map(([st]) => {
+      const v = V.speech[st][k], P = procs.map(x => V.speech[st][x]), nz = k !== "noisy";
+      return cell(v.miss, nz && v.miss === Math.min(...P.map(p => p.miss)), true) + cell(v.fa, nz && v.fa === Math.min(...P.map(p => p.fa)), true) +
+        `<td class="${nz && v.f1 === Math.max(...P.map(p => p.f1)) ? "best" : ""}">${v.f1.toFixed(1)}</td>`; }).join("") + "</tr>").join("") + "</tbody>";
+  $("#missLead").textContent = `${V.speech.ar_tel.safi.miss.toFixed(1)}% missed vs ${V.speech.ar_tel.krisp_tel.miss.toFixed(1)}% Krisp Tel v2, ${V.speech.ar_tel.krisp_pro.miss.toFixed(1)}% Krisp Pro v1`;
+  $("#stoiLead").textContent = `Arabic ${S.ar_tel.krisp_tel.stoi.toFixed(3)} vs ${S.ar_tel.safi.stoi.toFixed(3)}`;
+}
+
+// ---- real recordings summary
+const RS = DATA.real.summary, RW = DATA.real.win;
+$("#realTiles").innerHTML = [
+  [`${RW.ar_real.krisp_tel}%`, "of noisy real recordings rated higher with Safi than with Krisp Tel v2 (DNSMOS OVRL, 16 kHz)"],
+  [`${RW.ar_real_tel.krisp_tel}%`, "of real recordings over a phone channel rated higher with Safi than with Krisp Tel v2"],
+  [`${RS.ar_real_tel.safi.dnsmos_ovrl.toFixed(2)}`, "DNSMOS OVRL on real phone-channel recordings, the highest of all six systems (Krisp Tel v2: " + RS.ar_real_tel.krisp_tel.dnsmos_ovrl.toFixed(2) + ")"],
+].map(([v, l]) => `<div class="card tile"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+{
+  const mets = [["dnsmos_sig", "SIG"], ["dnsmos_bak", "BAK"], ["dnsmos_ovrl", "OVRL"]];
+  const procs = ORDER.filter(k => k !== "noisy");
+  const best = {}; DATA.real.sets.forEach(st => mets.forEach(([m]) => best[st.key + m] = Math.max(...procs.map(k => RS[st.key][k][m]))));
+  $("#realTable").innerHTML = `<thead><tr><th rowspan="2">System</th>${DATA.real.sets.map(st => `<th colspan="3" style="text-align:center">${st.sub}</th>`).join("")}</tr>
+    <tr>${DATA.real.sets.map(() => mets.map(([, l]) => `<th>DNSMOS ${l}</th>`).join("")).join("")}</tr></thead><tbody>` +
+    ORDER.map(k => `<tr class="${k === "safi" ? "safi" : ""}"><td>${k === "noisy" ? "Original recording" : sysName[k]}</td>` +
+      DATA.real.sets.map(st => mets.map(([m]) => { const v = RS[st.key][k][m]; const b = k !== "noisy" && Math.abs(v - best[st.key + m]) < 1e-9;
+        return `<td class="${b ? "best" : ""}">${v.toFixed(2)}</td>`; }).join("")).join("") + "</tr>").join("") + "</tbody>";
+}
+</script>
+</body>
+</html>

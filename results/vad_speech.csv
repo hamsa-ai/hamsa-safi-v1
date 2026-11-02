@@ -1,0 +1,25 @@
+set,system,miss,fa,f1
+ar_tel,Hush,26.3,15.7,83.2
+ar_tel,Krisp VIVA Pro v1,7.2,20.2,94.0
+ar_tel,Krisp VIVA Tel v2,8.3,18.6,93.6
+ar_tel,Unprocessed,7.2,28.6,93.1
+ar_tel,RNNoise,8.1,19.3,93.6
+ar_tel,Hamsa Safi v1,11.4,17.6,92.0
+ar_wb,Hush,4.4,20.6,95.9
+ar_wb,Krisp VIVA Pro v1,3.3,16.6,96.8
+ar_wb,Krisp VIVA Tel v2,13.6,15.7,91.3
+ar_wb,Unprocessed,4.9,27.8,95.0
+ar_wb,RNNoise,3.5,20.8,96.3
+ar_wb,Hamsa Safi v1,3.2,18.9,96.7
+en_tel,Hush,46.8,10.3,68.0
+en_tel,Krisp VIVA Pro v1,21.4,18.8,85.3
+en_tel,Krisp VIVA Tel v2,22.3,18.9,84.8
+en_tel,Unprocessed,16.9,31.5,86.3
+en_tel,RNNoise,45.7,17.2,68.1
+en_tel,Hamsa Safi v1,23.8,17.5,84.0
+en_wb,Hush,15.9,18.4,89.5
+en_wb,Krisp VIVA Pro v1,13.9,17.9,90.7
+en_wb,Krisp VIVA Tel v2,16.3,19.0,89.2
+en_wb,Unprocessed,13.7,30.8,89.5
+en_wb,RNNoise,11.6,25.3,91.3
+en_wb,Hamsa Safi v1,12.9,18.4,91.3

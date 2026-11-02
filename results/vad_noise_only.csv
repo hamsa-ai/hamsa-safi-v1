@@ -1,0 +1,25 @@
+clips,set,system,false_triggers_per_min,pct_time_flagged_speech
+other,noise_only_tel,Hush,0.2,0.1
+other,noise_only_tel,Krisp VIVA Pro v1,0.0,0.0
+other,noise_only_tel,Krisp VIVA Tel v2,0.0,0.0
+other,noise_only_tel,Unprocessed,0.1,0.1
+other,noise_only_tel,RNNoise,0.4,0.5
+other,noise_only_tel,Hamsa Safi v1,0.0,0.0
+other,noise_only_wb,Hush,0.5,0.3
+other,noise_only_wb,Krisp VIVA Pro v1,0.3,0.2
+other,noise_only_wb,Krisp VIVA Tel v2,0.0,0.0
+other,noise_only_wb,Unprocessed,0.0,0.0
+other,noise_only_wb,RNNoise,0.4,0.4
+other,noise_only_wb,Hamsa Safi v1,0.0,0.0
+voice,noise_only_tel,Hush,5.7,12.5
+voice,noise_only_tel,Krisp VIVA Pro v1,7.3,19.0
+voice,noise_only_tel,Krisp VIVA Tel v2,5.7,15.5
+voice,noise_only_tel,Unprocessed,10.8,42.1
+voice,noise_only_tel,RNNoise,8.8,24.7
+voice,noise_only_tel,Hamsa Safi v1,4.0,14.1
+voice,noise_only_wb,Hush,17.2,49.8
+voice,noise_only_wb,Krisp VIVA Pro v1,10.8,34.5
+voice,noise_only_wb,Krisp VIVA Tel v2,10.0,31.1
+voice,noise_only_wb,Unprocessed,13.5,53.8
+voice,noise_only_wb,RNNoise,16.8,70.7
+voice,noise_only_wb,Hamsa Safi v1,9.2,31.1
